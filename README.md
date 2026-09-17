@@ -41,16 +41,35 @@ That is everything. No accounts, no keys, no payments.
 
 ---
 
+## ⬇️ Download the source code
+
+Get the full project as a ZIP file — one click, no GitHub account needed:
+
+### 👉 [⬇️ Click here to download StockStat.zip](https://github.com/atharva-9423/StockStat/archive/refs/heads/master.zip)
+
+Prefer to look at the code first? Browse it here: https://github.com/atharva-9423/StockStat
+
+**After downloading, do this:**
+1. Open your **Downloads** folder and find `StockStat-master.zip`.
+2. **Right-click it → Extract All…** → choose a location (for example `Documents`) → click **Extract**.
+3. Open the extracted `StockStat-master` folder — you will see `backend` and `frontend` folders inside.
+4. Continue with **Step 1 of Setup below**, using *your* extracted location, for example:
+   ```powershell
+   cd "$HOME\Documents\StockStat-master\backend"
+   ```
+
+---
+
 ## 🚀 Setup — first time only (about 5 minutes)
 
 Open **PowerShell** (press `Win + X` → *Terminal* / *Windows PowerShell*) and run
 these commands **one by one**. Wait for each to finish before the next.
 
-**Step 1 — go to the project folder**
+**Step 1 — go to the project folder** (the `backend` folder inside your extracted project)
 ```powershell
-cd "C:\Users\ADMIN\OneDrive\My Projects\StockStat\backend"
+cd "$HOME\Documents\StockStat-master\backend"
 ```
-> 💡 Replace the path above with wherever *you* saved the project.
+> 💡 Replace the path above with wherever *you* extracted the project.
 
 **Step 2 — create a private environment for the app**
 ```powershell
@@ -77,7 +96,7 @@ copy .env.example .env
 In PowerShell, from the `backend` folder:
 
 ```powershell
-cd "C:\Users\ADMIN\OneDrive\My Projects\StockStat\backend"
+cd "$HOME\Documents\StockStat-master\backend"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
 ```
 
@@ -154,7 +173,7 @@ Restart the app after changing this file.
 ## 🧪 For developers — automatic checks
 
 ```powershell
-cd "C:\Users\ADMIN\OneDrive\My Projects\StockStat\backend"
+cd "$HOME\Documents\StockStat-master\backend"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
