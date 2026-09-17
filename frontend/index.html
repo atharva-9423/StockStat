@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StatStock — Statistics & Probability Stock Analysis</title>
+<meta name="description" content="Academic statistics and probability analysis of NSE stocks vs NIFTY 50 from real market data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css?v=4">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">STAT<span>STOCK</span></div>
+  <div class="tag">Statistics &amp; Probability · NSE · real market data</div>
+</header>
+<main>
+  <h1>Statistical analysis from real data.</h1>
+  <p class="sub">Enter an NSE-listed stock (e.g. <strong>Ambuja Cement</strong>). StatStock resolves the ticker, fetches historical data for <strong>01 Apr 2025 – 31 Mar 2026</strong> plus NIFTY 50, and computes every statistic deterministically with Python (pandas / NumPy / SciPy). No demo data.</p>
+
+  <div class="search-row" role="search">
+    <input id="q" type="search" placeholder="Search stock… (Ambuja, LT, RVNL)" aria-label="Search NSE stock" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list" style="flex:1;min-width:220px">
+    <button id="btnSearch" class="ghost">Search</button>
+  </div>
+  <div id="searchResults" class="results" role="listbox" aria-label="Matching stocks" aria-live="polite"></div>
+
+  <div class="search-row">
+    <input id="symbol" placeholder="Selected symbol — set via search above" aria-label="Confirmed NSE symbol" readonly title="This is filled automatically when you select a stock from the search results" style="flex:2;min-width:200px">
+    <input id="start" value="2025-04-01" aria-label="Start date" type="date" style="flex:1">
+    <input id="end" value="2026-03-31" aria-label="End date" type="date" style="flex:1">
+    <button id="btnAnalyze">Analyze</button>
+  </div>
+
+  <div id="loader" class="steps" hidden></div>
+  <div id="error" class="formula" hidden style="border-color:var(--danger)"></div>
+
+  <div id="dashboard" hidden>
+    <p class="meta" id="provenance"></p>
+    <div class="grid" id="overviewMetrics"></div>
+    <nav class="tabs" role="tablist" aria-label="Analysis sections">
+      <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+      <button role="tab" data-tab="statistics" aria-selected="false">Statistics</button>
+      <button role="tab" data-tab="nifty" aria-selected="false">NIFTY Comparison</button>
+      <button role="tab" data-tab="regression" aria-selected="false">Regression</button>
+      <button role="tab" data-tab="probability" aria-selected="false">Probability</button>
+      <button role="tab" data-tab="hypothesis" aria-selected="false">Hypothesis Test</button>
+      <button role="tab" data-tab="raw" aria-selected="false">Raw Data</button>
+      <button role="tab" data-tab="assignment" aria-selected="false">Assignment</button>
+    </nav>
+
+    <section class="panel active" id="panel-overview">
+      <h2>Overview</h2>
+      <div id="overviewDetail"></div>
+      <div class="chart-wrap"><h3>Historical closing price</h3><canvas id="chPrice"></canvas></div>
+      <div class="search-row">
+        <button id="btnPDF">Download PDF report</button>
+        <button id="btnExcel">Download Excel</button>
+        <button id="btnCSV" class="ghost">Download CSV</button>
+      </div>
+    </section>
+    <section class="panel" id="panel-statistics">
+      <h2>Descriptive statistics <span class="meta">(sample statistics, ddof=1 · Close)</span></h2>
+      <div id="statsDetail"></div>
+    </section>
+    <section class="panel" id="panel-nifty">
+      <h2>Stock vs NIFTY 50</h2>
+      <div id="niftyDetail"></div>
+      <div class="chart-wrap"><h3>Indexed performance — base = 100 (visualisation only)</h3><canvas id="chIndexed"></canvas></div>
+    </section>
+    <section class="panel" id="panel-regression">
+      <h2>Regression: price vs trading day</h2>
+      <div id="regDetail"></div>
+      <div class="chart-wrap"><h3>Actual prices + regression line (X = trading day, Y = close)</h3><canvas id="chReg"></canvas></div>
+    </section>
+    <section class="panel" id="panel-probability">
+      <h2>Probability — one week after 31 Mar 2026</h2>
+      <div id="probDetail"></div>
+    </section>
+    <section class="panel" id="panel-hypothesis">
+      <h2>Hypothesis test — one-sample mean t-test</h2>
+      <div class="search-row">
+        <input id="mu0" type="number" step="any" placeholder="Hypothesised mean μ₀" aria-label="Hypothesised mean">
+        <select id="alt" aria-label="Alternative hypothesis"><option value="two-sided">H₁: μ ≠ μ₀</option><option value="greater">H₁: μ &gt; μ₀</option><option value="less">H₁: μ &lt; μ₀</option></select>
+        <select id="alpha" aria-label="Significance level"><option value="0.05">α = 0.05</option><option value="0.01">α = 0.01</option><option value="0.10">α = 0.10</option></select>
+        <button id="btnHyp" class="ghost">Run test</button>
+      </div>
+      <div id="hypDetail"></div>
+    </section>
+    <section class="panel" id="panel-raw">
+      <h2>Raw data <span class="meta" id="rawCount"></span></h2>
+      <div class="search-row"><input id="rawSearch" type="search" placeholder="Filter rows…" aria-label="Filter rows"></div>
+      <div class="search-row raw-actions">
+        <button id="btnRawExcel">Download Raw Data (Excel)</button>
+        <button id="btnRawCSV" class="ghost">Download Raw Data (CSV)</button>
+      </div>
+      <div class="table-scroll"><table><thead><tr><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead><tbody id="rawBody"></tbody></table></div>
+    </section>
+    <section class="panel" id="panel-assignment">
+      <h2>Assignment view</h2>
+      <div id="assignDetail"></div>
+    </section>
+  </div>
+
+  <div id="empty">
+    <h2>No analysis yet</h2>
+    <p class="sub">Enter an NSE-listed stock to begin your statistical analysis.</p>
+  </div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<footer><div class="disclaimer"><strong>Academic analysis only.</strong> This application is not investment advice and statistical results do not guarantee future market performance.</div><div class="credit">Made by Atharva Phatangare</div></footer>
+<div class="watermark" aria-hidden="true">Made by Atharva Phatangare</div>
+<script src="js/app.js?v=7"></script>
+</body>
+</html>
